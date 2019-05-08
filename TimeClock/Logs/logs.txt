@@ -1,0 +1,10 @@
+2019-05-06 11:53:21,867 [5] INFO TimeClock.Controllers.ClockController - 
+TimeClock.DTOs.PunchClockDTO
+DeviceKey: 2345
+Time: 345
+PersonCount: 24
+2019-05-06 11:54:06,836 [5] INFO TimeClock.Controllers.ClockController - 
+TimeClock.DTOs.PunchClockDTO
+DeviceKey: 2345
+Time: 345
+PersonCount: 24
