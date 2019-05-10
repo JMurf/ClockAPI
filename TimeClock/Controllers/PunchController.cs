@@ -4,8 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Hosting;
 using System.Web.Http;
+using TimeClock.DTOs;
+using TimeClock.Models;
 
 namespace PunchClock.Controllers
 {
@@ -21,9 +24,37 @@ namespace PunchClock.Controllers
             log4net.Config.XmlConfigurator.Configure(
                     new FileInfo(HostingEnvironment.MapPath("~/log4net.config")));
         }
-        [HttpGet]
+        [HttpPost]
+        public async Task<IHttpActionResult> Post(PunchRequestDTO pReq)
+        {
+            PunchResponseDTO pResp = new PunchResponseDTO();
+            /* retrieve clock based on DeviceKey */
+            Clock clock = Global.ClockList[pReq.DeviceKey];
+            if (clock != null )
+            {
+                /* create a new task */
+                TaskFindRecords task = new TaskFindRecords();
+                task.interfaceName = "findRecords";
+                task.pass = "123456";
+                task.startTime = pReq.StartTime;
+                task.endTime = pReq.EndTime;
+                pResp.Status = 0;
+                pResp.Msg = "Clock Found";
+                pResp.Punches = task.getData();
+                return Ok(pResp);
+            }
+            else
+            {
+                pResp.Msg = "Clock not found";
+                pResp.DeviceKey = pReq.DeviceKey;
+                pResp.Status = -1;
+                return Ok(pResp);
+            }
+        }
+        [HttpPost]
         public IHttpActionResult Post(int id)
         {
+            log.Info("This is a post request with id field: " + id);
             return Ok();
         }
     }

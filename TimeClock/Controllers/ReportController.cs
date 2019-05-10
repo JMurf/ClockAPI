@@ -22,6 +22,12 @@ namespace TimeClock.Controllers
                     new FileInfo(HostingEnvironment.MapPath("~/log4net.config")));
         }
         [HttpPost]
+        public IHttpActionResult Post()
+        {
+            //List<PunchData>
+            return Ok();
+        }
+        [HttpPost]
         public IHttpActionResult Post(int id)
         {
             return Ok();

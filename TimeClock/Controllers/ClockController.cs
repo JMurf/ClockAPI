@@ -8,6 +8,8 @@ using TimeClock.DTOs;
 using TimeClock.Models;
 using System.IO;
 using System.Web.Hosting;
+using System.Web.Helpers;
+using Newtonsoft.Json;
 
 namespace TimeClock.Controllers
 {
@@ -16,7 +18,7 @@ namespace TimeClock.Controllers
         public bool Result { get; set; }
     }
     [RoutePrefix("api/{controller}/{id}")]
-    public class ClockController : ApiController
+    public class ClockController : ApiController   
     {
         private static readonly log4net.ILog log = 
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -25,12 +27,15 @@ namespace TimeClock.Controllers
         {
             log4net.Config.XmlConfigurator.Configure(new FileInfo(HostingEnvironment.MapPath("~/log4net.config")));
         }
+
         [HttpPost]
         public IHttpActionResult Post(int id, PunchClockDTO data)
         {
             log.Info(data);
+            string temp = JsonConvert.SerializeObject(data);
+            log.Info(temp);
             ReturnParam rp = new ReturnParam();
-            Clock clock;    /* clock making post request */
+            Clock clock = null;    /* clock making post request */
             switch (id)
             {
                 case 1:  /* periodic 'heartbeat' of the punchclocks */
@@ -43,16 +48,25 @@ namespace TimeClock.Controllers
                     }
                     else
                     {
-                        clock = new Clock
+                        try
                         {
-                            DeviceKey = data.DeviceKey,
-                            LastHeartbeat = DateTime.Now,
-                            Tasks = new Queue<TaskRoot>(),
-                            ActiveTasks = new List<TaskRoot>(),
-                            OnLine = true
-                        };
-                        
-                        Global.ClockList.Add(data.DeviceKey, clock);
+                            clock = new Clock
+                            {
+                                DeviceKey = data.DeviceKey,
+                                LastHeartbeat = DateTime.Now,
+                                Tasks = new Queue<TaskRoot>(),
+                                ActiveTasks = new List<TaskRoot>(),
+                                OnLine = true
+                            };
+                        }
+                        catch (Exception e)
+                        {
+                            log.Info("--------Exception occurred-------\n" + e);
+                        }
+                        if( clock != null )
+                        {
+                            Global.ClockList.Add(data.DeviceKey, clock);
+                        }
                     }
                     //should we add a task?
                     /* !!TEMP!! lets hardcode a FindRecords punches task */

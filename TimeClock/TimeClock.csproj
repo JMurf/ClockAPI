@@ -231,8 +231,13 @@
     <Compile Include="Controllers\ClockController.cs" />
     <Compile Include="Controllers\PunchController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
+    <Compile Include="DTOs\ExceptionDTO.cs" />
     <Compile Include="DTOs\PunchClockDTO.cs" />
     <Compile Include="DTOs\PunchRecordDTO.cs" />
+    <Compile Include="DTOs\PunchRequestDTO.cs" />
+    <Compile Include="DTOs\PunchResponseDTO.cs" />
+    <Compile Include="DTOs\RecordDTO.cs" />
+    <Compile Include="DTOs\ReportDTO.cs" />
     <Compile Include="DTOs\ReturnDTO.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

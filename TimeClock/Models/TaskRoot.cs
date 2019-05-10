@@ -1,19 +1,23 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Http;
+using System.Web.Script.Serialization;
 using TimeClock.DTOs;
 
 namespace TimeClock.Models
 {
     public class TaskRoot
     {
-        public delegate void DataProc(PunchClockDTO tr);
+        public delegate List<RecordDTO> DataProc(PunchClockDTO tr);
 
         public string pass { get; set; }
         public int taskNo { get; set; }
         public bool result { get; set; }
         public string interfaceName { get; set; }
+        [JsonIgnore]
         public DataProc processData { get; set; }
 
         public TaskRoot()
