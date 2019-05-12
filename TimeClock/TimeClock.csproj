@@ -245,12 +245,12 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Clock.cs" />
     <Compile Include="Models\ClockInterface.cs" />
+    <Compile Include="Models\ClockTask.cs" />
     <Compile Include="Models\Global.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\MeViewModels.cs" />
     <Compile Include="Models\TaskFindRecords.cs" />
-    <Compile Include="Models\TaskRoot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
     <Compile Include="Results\ChallengeResult.cs" />

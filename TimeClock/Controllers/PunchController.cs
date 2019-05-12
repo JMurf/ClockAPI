@@ -19,11 +19,14 @@ namespace PunchClock.Controllers
             log4net.LogManager.GetLogger(
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        delegate void HandleTaskDelegate(ClockTask ct);
+
         public PunchController()
         {
             log4net.Config.XmlConfigurator.Configure(
                     new FileInfo(HostingEnvironment.MapPath("~/log4net.config")));
         }
+
         [HttpPost]
         public async Task<IHttpActionResult> Post(PunchRequestDTO pReq)
         {
@@ -34,10 +37,15 @@ namespace PunchClock.Controllers
             {
                 /* create a new task */
                 TaskFindRecords task = new TaskFindRecords();
-                task.interfaceName = "findRecords";
-                task.pass = "123456";
+                task.InterfaceName = "findRecords";
+                task.Pass = "123456";
                 task.startTime = pReq.StartTime;
                 task.endTime = pReq.EndTime;
+
+                HandleTaskDelegate taskDelegate = new HandleTaskDelegate(clock.DoTask);
+                IAsyncResult ar = taskDelegate.BeginInvoke(null, null, task);
+
+                taskDelegate.EndInvoke(ar);
                 pResp.Status = 0;
                 pResp.Msg = "Clock Found";
                 pResp.Punches = task.getData();

@@ -6,7 +6,7 @@ using TimeClock.DTOs;
 
 namespace TimeClock.Models
 {
-    public class TaskFindRecords : TaskRoot
+    public class TaskFindRecords : ClockTask
     {
         [JsonIgnore]
         private static readonly log4net.ILog log =
@@ -29,7 +29,7 @@ namespace TimeClock.Models
         public TaskFindRecords()
         {
             log4net.Config.XmlConfigurator.Configure(new FileInfo(HostingEnvironment.MapPath("~/log4net.config")));
-            processData = new DataProc(processFindRecords);
+            ProcessData = new DataProc(processFindRecords);
         }
         public string personId { get; set; }
         public string length { get; set; }
@@ -43,14 +43,14 @@ namespace TimeClock.Models
         }
         public void fill()
         {
-            pass = "123456";
-            interfaceName = "findRecords";
+            Pass = "123456";
+            InterfaceName = "findRecords";
             personId = "-1";
             startTime = "0";
             length = "-1";
             index = "0";
             endTime = "2019-05-06 01:00:05";
-            result = true;
+            Result = true;
         }
     }
 }

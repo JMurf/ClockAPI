@@ -16,6 +16,7 @@ namespace TimeClock.Controllers
     class ReturnParam
     {
         public bool Result { get; set; }
+        public string Msg { get; set; }
     }
     [RoutePrefix("api/{controller}/{id}")]
     public class ClockController : ApiController   
@@ -31,10 +32,14 @@ namespace TimeClock.Controllers
         [HttpPost]
         public IHttpActionResult Post(int id, PunchClockDTO data)
         {
-            log.Info(data);
-            string temp = JsonConvert.SerializeObject(data);
-            log.Info(temp);
+            log.Info(JsonConvert.SerializeObject(data));
             ReturnParam rp = new ReturnParam();
+            if (data == null || data.DeviceKey == null)
+            {
+                rp.Result = false;
+                rp.Msg = "No post data or missing attributes";
+                return Ok(rp);
+            }
             Clock clock = null;    /* clock making post request */
             switch (id)
             {
@@ -54,8 +59,8 @@ namespace TimeClock.Controllers
                             {
                                 DeviceKey = data.DeviceKey,
                                 LastHeartbeat = DateTime.Now,
-                                Tasks = new Queue<TaskRoot>(),
-                                ActiveTasks = new List<TaskRoot>(),
+                                Tasks = new Queue<ClockTask>(),
+                                ActiveTasks = new List<ClockTask>(),
                                 OnLine = true
                             };
                         }
@@ -70,11 +75,11 @@ namespace TimeClock.Controllers
                     }
                     //should we add a task?
                     /* !!TEMP!! lets hardcode a FindRecords punches task */
-                    if(clock.Tasks.Count == 0 && new Random().NextDouble() > .2)
+                    if(clock.Tasks.Count == 0 && new Random().NextDouble() > .99999)
                     {
                         TaskFindRecords task = new TaskFindRecords();
                         task.fill();
-                        log.Info("Task #" + task.taskNo + " added.");
+                        log.Info("Task #" + task.TaskNo + " added.");
                         clock.Tasks.Enqueue(task);
                     }
 
@@ -88,11 +93,11 @@ namespace TimeClock.Controllers
                         clock = Global.ClockList[data.DeviceKey];
                         if( clock.Tasks.Count > 0 )
                         {
-                            TaskRoot task = clock.Tasks.Dequeue();
-                            if( task.interfaceName.Equals("findRecords"))
+                            ClockTask task = clock.Tasks.Dequeue();
+                            if( task.InterfaceName.Equals("findRecords"))
                             {
                                 clock.ActiveTasks.Add(task); /* tasks in progress */
-                                log.Info("Task #" + task.taskNo + " added to active tasks.\nSize: " + 
+                                log.Info("Task #" + task.TaskNo + " added to active tasks.\nSize: " + 
                                             clock.ActiveTasks.Count);
                                 return Ok((TaskFindRecords)task);
                             }
@@ -107,18 +112,19 @@ namespace TimeClock.Controllers
                         log.Info("Task completion");
                         log.Info("Removing: " + data.TaskNo);
                         log.Info(data);
-                        TaskRoot task = clock.ActiveTasks.Find(x => x.taskNo == data.TaskNo);
+                        ClockTask task = clock.ActiveTasks.Find(x => x.TaskNo == data.TaskNo);
                         if( task != null )
                         {
                             clock.ActiveTasks.Remove(task);
                             log.Info("Found task\n------------------");
-                            task.processData(data);
+                            task.ProcessData(data);
                         }
                         else
                         {
                             log.Info("Task not found in active list.\n---------------------");
                         }
-                        return Ok(clock.Tasks.Count > 0);
+                        rp.Result = clock.Tasks.Count > 0;
+                        return Ok(rp);
                     }
                     rp.Result = false;
                     return Ok(rp);
