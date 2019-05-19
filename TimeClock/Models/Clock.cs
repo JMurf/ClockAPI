@@ -11,13 +11,14 @@ namespace TimeClock.Models
         public string DeviceKey { get; set; }
         public bool OnLine { get; set; }
         public DateTime LastHeartbeat { get; set; }
-        public List<ClockTask> ActiveTasks { get; set; }
-        public Queue<ClockTask> Tasks { get; set; }
+        public List<Request> ActiveReqs { get; set; }
+        public List<Request> Reqs { get; set; }
 
-        public void DoTask(ClockTask task)
+        public void DoTask(Request req)
         {
-            //Tasks.Enqueue(task);
-            System.Threading.Thread.Sleep(20000);
+                Reqs.Add(req);
+            //System.Threading.Thread.Sleep(10000);
+            //req.mre.Set();
         }
     }
 

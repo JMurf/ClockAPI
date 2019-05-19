@@ -9,7 +9,7 @@ using TimeClock.DTOs;
 
 namespace TimeClock.Models
 {
-    public class ClockTask
+    public class ReqClock
     {
         public delegate List<RecordDTO> DataProc(PunchClockDTO tr);
 
@@ -20,7 +20,7 @@ namespace TimeClock.Models
         [JsonIgnore]
         public DataProc ProcessData { get; set; }
 
-        public ClockTask()
+        public ReqClock()
         {
             TaskNo = (new Random()).Next(Int32.MaxValue);
         }
@@ -31,11 +31,11 @@ namespace TimeClock.Models
         public override bool Equals(object obj)
         {
             if (obj == null) return false;
-            ClockTask objAsTask = obj as ClockTask;
-            if (objAsTask == null) return false;
-            else return Equals(objAsTask);
+            ReqClock objAsReq = obj as ReqClock;
+            if (objAsReq == null) return false;
+            else return Equals(objAsReq);
         }
-        public bool Equals(ClockTask other)
+        public bool Equals(ReqClock other)
         {
             if (other == null) return false;
             return (this.TaskNo.Equals(other.TaskNo));

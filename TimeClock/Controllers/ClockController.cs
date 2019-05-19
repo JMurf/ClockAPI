@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using TimeClock.DTOs;
 using TimeClock.Models;
 using System.IO;
 using System.Web.Hosting;
-using System.Web.Helpers;
 using Newtonsoft.Json;
 
 namespace TimeClock.Controllers
@@ -51,7 +47,7 @@ namespace TimeClock.Controllers
                         clock.OnLine = true;
                         clock.LastHeartbeat = DateTime.Now;
                     }
-                    else
+                    else /* new clock checking in, add to list */
                     {
                         try
                         {
@@ -59,8 +55,8 @@ namespace TimeClock.Controllers
                             {
                                 DeviceKey = data.DeviceKey,
                                 LastHeartbeat = DateTime.Now,
-                                Tasks = new Queue<ClockTask>(),
-                                ActiveTasks = new List<ClockTask>(),
+                                Reqs = new List<Request>(),
+                                ActiveReqs = new List<Request>(),
                                 OnLine = true
                             };
                         }
@@ -73,57 +69,59 @@ namespace TimeClock.Controllers
                             Global.ClockList.Add(data.DeviceKey, clock);
                         }
                     }
-                    //should we add a task?
-                    /* !!TEMP!! lets hardcode a FindRecords punches task */
-                    if(clock.Tasks.Count == 0 && new Random().NextDouble() > .99999)
+                    //should we add a req?
+                    /* !!TEMP!! lets hardcode a FindRecords punches req */
+                    if(clock.Reqs.Count == 0 && new Random().NextDouble() > .99999)
                     {
-                        TaskFindRecords task = new TaskFindRecords();
+                        RequestFindRecords task = new RequestFindRecords();
                         task.fill();
                         log.Info("Task #" + task.TaskNo + " added.");
-                        clock.Tasks.Enqueue(task);
+                        clock.Reqs.Add(task);
                     }
 
                     /* if there are any tasks for the clock, set result flag to true */
-                    rp.Result = clock.Tasks.Count > 0;
+                    rp.Result = clock.Reqs.Count > 0;
                     return Ok(rp);
 
-                case 2: /* clock retrieves task */
+                case 2: /* clock retrieves req */
                     if (Global.ClockList.ContainsKey(data.DeviceKey))
                     {
                         clock = Global.ClockList[data.DeviceKey];
-                        if( clock.Tasks.Count > 0 )
+                        if( clock.Reqs.Count > 0 )
                         {
-                            ClockTask task = clock.Tasks.Dequeue();
-                            if( task.InterfaceName.Equals("findRecords"))
+                            Request req = clock.Reqs[0];
+                            clock.Reqs.RemoveAt(0);
+                            if( req.InterfaceName.Equals("findRecords"))
                             {
-                                clock.ActiveTasks.Add(task); /* tasks in progress */
-                                log.Info("Task #" + task.TaskNo + " added to active tasks.\nSize: " + 
-                                            clock.ActiveTasks.Count);
-                                return Ok((TaskFindRecords)task);
+                                clock.ActiveReqs.Add(req); /* tasks in progress */
+                                log.Info("Task #" + req.TaskNo + " added to active tasks.\nSize: " + 
+                                            clock.ActiveReqs.Count);
+                                return Ok((RequestFindRecords)req);
                             }
                         }
                     }
-                    rp.Result = false; /* if no task or can't find clock */
+                    rp.Result = false; /* if no req or can't find clock */
                     return Ok(rp);
-                case 3: /* result of clock executing task */
+                case 3: /* result of clock executing req */
                     if (Global.ClockList.ContainsKey(data.DeviceKey))
                     {
                         clock = Global.ClockList[data.DeviceKey];
                         log.Info("Task completion");
                         log.Info("Removing: " + data.TaskNo);
                         log.Info(data);
-                        ClockTask task = clock.ActiveTasks.Find(x => x.TaskNo == data.TaskNo);
-                        if( task != null )
+                        Request req = clock.ActiveReqs.Find(x => x.TaskNo == data.TaskNo);
+                        if( req != null )
                         {
-                            clock.ActiveTasks.Remove(task);
-                            log.Info("Found task\n------------------");
-                            task.ProcessData(data);
+                            clock.ActiveReqs.Remove(req);
+                            log.Info("Found req\n------------------");
+                            req.ProcessData(data);
+                            req.mre.Set();
                         }
                         else
                         {
                             log.Info("Task not found in active list.\n---------------------");
                         }
-                        rp.Result = clock.Tasks.Count > 0;
+                        rp.Result = clock.Reqs.Count > 0;
                         return Ok(rp);
                     }
                     rp.Result = false;

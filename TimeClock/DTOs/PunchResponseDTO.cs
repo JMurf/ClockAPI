@@ -10,6 +10,6 @@ namespace TimeClock.DTOs
         public string DeviceKey { get; set; }
         public string Msg { get; set; }
         public int Status { get; set; }
-        public List<PunchRecordDTO> Punches { get; set; }
+        public List<PunchRecordDTO> PunchData { get; set; }
     }
 }

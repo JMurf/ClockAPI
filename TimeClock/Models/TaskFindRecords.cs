@@ -6,7 +6,7 @@ using TimeClock.DTOs;
 
 namespace TimeClock.Models
 {
-    public class TaskFindRecords : ClockTask
+    public class ReqFindRecords : ReqClock
     {
         [JsonIgnore]
         private static readonly log4net.ILog log =
@@ -26,7 +26,7 @@ namespace TimeClock.Models
             return list;
         }
 
-        public TaskFindRecords()
+        public ReqFindRecords()
         {
             log4net.Config.XmlConfigurator.Configure(new FileInfo(HostingEnvironment.MapPath("~/log4net.config")));
             ProcessData = new DataProc(processFindRecords);
