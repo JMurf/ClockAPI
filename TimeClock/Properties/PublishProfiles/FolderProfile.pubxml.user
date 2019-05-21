@@ -313,10 +313,10 @@ by editing this MSBuild file. In order to learn more about this please visit htt
       <publishTime>02/01/2018 13:20:56</publishTime>
     </File>
     <File Include="bin/TimeClock.dll">
-      <publishTime>05/09/2019 13:27:14</publishTime>
+      <publishTime>05/21/2019 01:15:19</publishTime>
     </File>
     <File Include="bin/TimeClock.pdb">
-      <publishTime>05/09/2019 13:27:14</publishTime>
+      <publishTime>05/21/2019 01:15:19</publishTime>
     </File>
     <File Include="bin/WebGrease.dll">
       <publishTime>01/23/2014 14:57:34</publishTime>

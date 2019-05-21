@@ -6,14 +6,20 @@ using TimeClock.DTOs;
 
 namespace TimeClock.Models
 {
+    public enum RequestStatus
+    {
+        COMPLETED, INITIATED, QUEUED, ACTIVE, CANT_COMPLETE
+    }
     public class Request
     {
-        public delegate void DataProc(PunchClockDTO tr);
-
+        public delegate void DataProc(ClockDTO tr);
+        [JsonIgnore]
+        public RequestStatus Status { get; set; }
         public string Pass { get; set; }
-        public int TaskNo { get; set; }
-        public bool Result { get; set; }
+        public int TaskNo { get; set; }     /* unique task (req) identifier */ 
+        public string Result { get; set; }
         public string InterfaceName { get; set; }
+        public string Data { get; set; }
         [JsonIgnore]
         public ManualResetEvent mre { get; set; }
 
@@ -23,6 +29,7 @@ namespace TimeClock.Models
         public Request()
         {
             TaskNo = (new Random()).Next(Int32.MaxValue);
+            Status = RequestStatus.INITIATED;
         }
         public override string ToString()
         {

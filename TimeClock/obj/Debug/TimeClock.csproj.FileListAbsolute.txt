@@ -233,7 +233,6 @@ C:\Users\jonat\source\repos\PunchClock\TimeClock\obj\Debug\TimeClock.csproj.Core
 C:\Users\jonat\source\repos\PunchClock\TimeClock\obj\Debug\TimeClock.csproj.CopyComplete
 C:\Users\jonat\source\repos\PunchClock\TimeClock\obj\Debug\TimeClock.dll
 C:\Users\jonat\source\repos\PunchClock\TimeClock\obj\Debug\TimeClock.pdb
-C:\Users\jonat\source\repos\PunchClock\TimeClock\obj\Debug\TimeClock.csprojAssemblyReference.cache
 C:\Users\Jonathan\source\repos\ClockAPI\TimeClock\bin\TimeClock.dll.config
 C:\Users\Jonathan\source\repos\ClockAPI\TimeClock\bin\TimeClock.dll
 C:\Users\Jonathan\source\repos\ClockAPI\TimeClock\bin\TimeClock.pdb
@@ -352,3 +351,4 @@ C:\Users\Jonathan\source\repos\ClockAPI\TimeClock\obj\Debug\TimeClock.csproj.Cor
 C:\Users\Jonathan\source\repos\ClockAPI\TimeClock\obj\Debug\TimeClock.csproj.CopyComplete
 C:\Users\Jonathan\source\repos\ClockAPI\TimeClock\obj\Debug\TimeClock.dll
 C:\Users\Jonathan\source\repos\ClockAPI\TimeClock\obj\Debug\TimeClock.pdb
+C:\Users\jonat\source\repos\PunchClock\TimeClock\obj\Debug\TimeClock.csprojAssemblyReference.cache

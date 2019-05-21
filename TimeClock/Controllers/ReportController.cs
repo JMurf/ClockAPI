@@ -24,7 +24,7 @@ namespace TimeClock.Controllers
         [HttpPost]
         public IHttpActionResult Post()
         {
-            //List<PunchData>
+            //List<Response>
             return Ok();
         }
         [HttpPost]

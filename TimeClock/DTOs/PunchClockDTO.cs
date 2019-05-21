@@ -1,6 +1,6 @@
 ﻿namespace TimeClock.DTOs
 {
-    public class PunchClockDTO
+    public class ClockDTO
     {
         public string DeviceKey { get; set; }
         public string Time { get; set; }
@@ -8,6 +8,7 @@
         public string PersonCount { get; set; }
         public string FaceCount { get; set; }
         public string Version { get; set; }
+        public string Data { get; set; }
 
         public string Result { get; set; }  /* result of task */
         public string InterfaceName { get; set; } /* interface to be executed */

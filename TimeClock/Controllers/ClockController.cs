@@ -26,14 +26,17 @@ namespace TimeClock.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult Post(int id, PunchClockDTO data)
+        public IHttpActionResult Post(int id, ClockDTO postData)
         {
-            log.Info(JsonConvert.SerializeObject(data));
+            string idStr = "Heartbeat: \n";
+            if( id == 2 ) idStr = "Retrieve Request: \n";
+            if (id == 3) idStr = "Task Completion: \n";
+            log.Info(idStr + JsonConvert.SerializeObject(postData));
             ReturnParam rp = new ReturnParam();
-            if (data == null || data.DeviceKey == null)
+            if (postData == null || postData.DeviceKey == null)
             {
                 rp.Result = false;
-                rp.Msg = "No post data or missing attributes";
+                rp.Msg = "No post postData or missing attributes";
                 return Ok(rp);
             }
             Clock clock = null;    /* clock making post request */
@@ -41,9 +44,9 @@ namespace TimeClock.Controllers
             {
                 case 1:  /* periodic 'heartbeat' of the punchclocks */
                     /* update our clock collection */
-                    if ( Global.ClockList.ContainsKey(data.DeviceKey) )
+                    if ( Global.ClockList.ContainsKey(postData.DeviceKey) )
                     {
-                        clock = Global.ClockList[data.DeviceKey];
+                        clock = Global.ClockList[postData.DeviceKey];
                         clock.OnLine = true;
                         clock.LastHeartbeat = DateTime.Now;
                     }
@@ -53,10 +56,10 @@ namespace TimeClock.Controllers
                         {
                             clock = new Clock
                             {
-                                DeviceKey = data.DeviceKey,
+                                DeviceKey = postData.DeviceKey,
                                 LastHeartbeat = DateTime.Now,
                                 Reqs = new List<Request>(),
-                                ActiveReqs = new List<Request>(),
+                                ActiveReq = null,
                                 OnLine = true
                             };
                         }
@@ -66,67 +69,71 @@ namespace TimeClock.Controllers
                         }
                         if( clock != null )
                         {
-                            Global.ClockList.Add(data.DeviceKey, clock);
+                            Global.ClockList.Add(postData.DeviceKey, clock);
                         }
                     }
-                    //should we add a req?
-                    /* !!TEMP!! lets hardcode a FindRecords punches req */
-                    if(clock.Reqs.Count == 0 && new Random().NextDouble() > .99999)
-                    {
-                        RequestFindRecords task = new RequestFindRecords();
-                        task.fill();
-                        log.Info("Task #" + task.TaskNo + " added.");
-                        clock.Reqs.Add(task);
-                    }
-
                     /* if there are any tasks for the clock, set result flag to true */
-                    rp.Result = clock.Reqs.Count > 0;
+                    rp.Result = clock.HasQueuedRequest();
                     return Ok(rp);
 
                 case 2: /* clock retrieves req */
-                    if (Global.ClockList.ContainsKey(data.DeviceKey))
+                    if (Global.ClockList.ContainsKey(postData.DeviceKey))
                     {
-                        clock = Global.ClockList[data.DeviceKey];
-                        if( clock.Reqs.Count > 0 )
+                        clock = Global.ClockList[postData.DeviceKey];
+                        Request req = null;
+                        for( int i=0; i<clock.Reqs.Count; i++ )
                         {
-                            Request req = clock.Reqs[0];
-                            clock.Reqs.RemoveAt(0);
-                            if( req.InterfaceName.Equals("findRecords"))
+                            if (clock.Reqs[i].Status == RequestStatus.QUEUED)
                             {
-                                clock.ActiveReqs.Add(req); /* tasks in progress */
-                                log.Info("Task #" + req.TaskNo + " added to active tasks.\nSize: " + 
-                                            clock.ActiveReqs.Count);
-                                return Ok((RequestFindRecords)req);
+                                req = clock.Reqs[i];
+                                log.Info("New Request Info: " + JsonConvert.SerializeObject(req));
+                                if (req.InterfaceName.Equals("findRecords"))
+                                {
+                                    log.Info("Task #" + req.TaskNo + " added to active tasks.");
+                                    req.Status = RequestStatus.ACTIVE;
+                                    req.Result = "true";
+                                    return Ok((RequestFindRecords)req);
+                                }
+                                else
+                                {
+                                    log.Info("Removing task #" + req.TaskNo + ": unknown interface.");
+                                    clock.Reqs.Remove(req);
+                                }
                             }
                         }
                     }
                     rp.Result = false; /* if no req or can't find clock */
                     return Ok(rp);
                 case 3: /* result of clock executing req */
-                    if (Global.ClockList.ContainsKey(data.DeviceKey))
+                    rp.Result = false;
+                    if (Global.ClockList.ContainsKey(postData.DeviceKey))
                     {
-                        clock = Global.ClockList[data.DeviceKey];
+                        clock = Global.ClockList[postData.DeviceKey];
                         log.Info("Task completion");
-                        log.Info("Removing: " + data.TaskNo);
-                        log.Info(data);
-                        Request req = clock.ActiveReqs.Find(x => x.TaskNo == data.TaskNo);
-                        if( req != null )
+                        log.Info(JsonConvert.SerializeObject(postData));
+
+                        Request req = null;
+                        for (int i = 0; i < clock.Reqs.Count; i++)
                         {
-                            clock.ActiveReqs.Remove(req);
-                            log.Info("Found req\n------------------");
-                            req.ProcessData(data);
+                            if (clock.Reqs[i].TaskNo.Equals(postData.TaskNo))
+                            {
+                                req = clock.Reqs[i];
+                                break;
+                            }
+                        }
+                        if (req != null)
+                        {
+                            req.ProcessData(postData);
+                            log.Info("Marking request complete: " + req.TaskNo);
+                            req.Status = RequestStatus.COMPLETED;
                             req.mre.Set();
                         }
-                        else
-                        {
-                            log.Info("Task not found in active list.\n---------------------");
-                        }
-                        rp.Result = clock.Reqs.Count > 0;
-                        return Ok(rp);
+                        rp.Result = clock.HasQueuedRequest();
                     }
-                    rp.Result = false;
                     return Ok(rp);
                 default:
+                    rp.Msg = "Invalid Index: " + id;
+                    log.Info(JsonConvert.SerializeObject(rp));
                     return Ok(false);
             }
         }

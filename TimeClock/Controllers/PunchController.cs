@@ -1,11 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Hosting;
 using System.Web.Http;
 using TimeClock.DTOs;
@@ -29,69 +26,69 @@ namespace PunchClock.Controllers
                     new FileInfo(HostingEnvironment.MapPath("~/log4net.config")));
         }
         [HttpPost]
-        public IHttpActionResult Post(PunchRequestDTO pReq)
+        public IHttpActionResult Post(PunchRequestDTO postData)
         {
             PunchResponseDTO pResp = new PunchResponseDTO();
+            log.Info(JsonConvert.SerializeObject(postData));
             /* retrieve clock based on DeviceKey */
             if (Global.ClockList.Count == 0 || 
-                    Global.ClockList.ContainsKey(pReq.DeviceKey) == false)  /* testing */
+                    Global.ClockList.ContainsKey(postData.DeviceKey) == false)  /* testing */
             {
                 Clock c = new Clock();
-                c.DeviceKey = pReq.DeviceKey;
+                c.DeviceKey = postData.DeviceKey;
                 c.OnLine = true;
                 c.LastHeartbeat = DateTime.Now;
                 c.Reqs = new List<Request>();
-                c.ActiveReqs = new List<Request>();
+                c.ActiveReq = null;
                 Global.ClockList.Add(c.DeviceKey, c);
             }
-            Clock clock = Global.ClockList[pReq.DeviceKey];
+            Clock clock = Global.ClockList[postData.DeviceKey];
             if (clock != null )
             {
-                /* create a new clock req - hardcoded for now */
+                /* create a new clock req from postData */
                 RequestFindRecords req = new RequestFindRecords();
-                req.fill();
+
+                req.Status = RequestStatus.INITIATED;
+                req.StartTime = postData.StartTime;
+                req.EndTime = postData.EndTime;
+                req.InterfaceName = "findRecords";
+                req.PersonId = postData.PersonId;
+                req.Length = postData.Length;
+                req.Index = postData.Index;
 
                 req.mre = new ManualResetEvent(false);
                 HandleReqDelegate reqDelegate = new HandleReqDelegate(clock.DoTask);
 
                 /* requested interface */
                 reqDelegate.Invoke(req);
-                req.mre.WaitOne();
+                req.mre.WaitOne(180 * 1000);
 
-                pResp.Status = 0;
-                pResp.Msg = "Clock Found";
-                pResp.PunchData = req.PunchList;
+                if( req.Status == RequestStatus.COMPLETED )
+                {
+                    pResp.Status = req.Status;
+                    pResp.Msg = "Request " + req.TaskNo + " Completed";
+                    pResp.DeviceKey = postData.DeviceKey;
+                    pResp.Data = req.Data;
+                }
+                else
+                {
+                    pResp.Status = req.Status;
+                    pResp.DeviceKey = postData.DeviceKey;
+                    pResp.Msg = "Timeout before request completed";
+                    pResp.Data = req.Data;
+                    Request reqToDel = clock.Reqs.Find(x => x.TaskNo == req.TaskNo);
+                    log.Info("Request " + reqToDel.TaskNo + " removed\n------------------");
+                }
                 return Ok(pResp);
             }
             else
             {
+                pResp.Status = RequestStatus.CANT_COMPLETE;
                 pResp.Msg = "Clock not found";
-                pResp.DeviceKey = pReq.DeviceKey;
-                pResp.Status = -1;
-                pResp.PunchData = null;
+                pResp.DeviceKey = postData.DeviceKey;
+
                 return Ok(pResp);
             }
-        }
-        private void ReqTimeout(Clock clock, RequestFindRecords req )
-        {
-            Thread.Sleep(120000);
-            for (int i = 0; i < clock.Reqs.Count; i++)
-            {
-                if (clock.Reqs[i].TaskNo == req.TaskNo)
-                {
-                    clock.Reqs.RemoveAt(i);
-                    break;
-                }
-            }
-            for (int i = 0; i < clock.ActiveReqs.Count; i++)
-            {
-                if (clock.ActiveReqs[i].TaskNo == req.TaskNo)
-                {
-                    clock.ActiveReqs.RemoveAt(i);
-                    break;
-                }
-            }
-            req.mre.Set();
         }
         [HttpPost]
         public IHttpActionResult Post(int id)
