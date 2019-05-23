@@ -231,8 +231,8 @@
     <Compile Include="Controllers\ClockController.cs" />
     <Compile Include="Controllers\PunchController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
+    <Compile Include="DTOs\ClockDTO.cs" />
     <Compile Include="DTOs\ExceptionDTO.cs" />
-    <Compile Include="DTOs\PunchClockDTO.cs" />
     <Compile Include="DTOs\PunchRecordDTO.cs" />
     <Compile Include="DTOs\PunchRequestDTO.cs" />
     <Compile Include="DTOs\PunchResponseDTO.cs" />

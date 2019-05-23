@@ -17,8 +17,7 @@ namespace PunchClock.Controllers
             log4net.LogManager.GetLogger(
                 System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        delegate void HandleReqDelegate(Request ct);
-        //delegate void TimeoutDelegate(Clock clock, RequestFindRecords req);
+        delegate void HandleRequestDelegate(Request ct);
 
         public PunchController()
         {
@@ -28,8 +27,14 @@ namespace PunchClock.Controllers
         [HttpPost]
         public IHttpActionResult Post(PunchRequestDTO postData)
         {
-            PunchResponseDTO pResp = new PunchResponseDTO();
             log.Info(JsonConvert.SerializeObject(postData));
+            PunchResponseDTO pResp = new PunchResponseDTO();
+            if( postData == null )
+            {
+                pResp.Msg = "Data is null";
+                pResp.Status = RequestStatus.CANT_COMPLETE;
+                return Ok(pResp);                
+            }
             /* retrieve clock based on DeviceKey */
             if (Global.ClockList.Count == 0 || 
                     Global.ClockList.ContainsKey(postData.DeviceKey) == false)  /* testing */
@@ -57,11 +62,11 @@ namespace PunchClock.Controllers
                 req.Index = postData.Index;
 
                 req.mre = new ManualResetEvent(false);
-                HandleReqDelegate reqDelegate = new HandleReqDelegate(clock.DoTask);
+                HandleRequestDelegate reqDelegate = new HandleRequestDelegate(clock.DoTask);
 
                 /* requested interface */
                 reqDelegate.Invoke(req);
-                req.mre.WaitOne(180 * 1000);
+                req.mre.WaitOne(180 * 1000);  //3 minute timeout
 
                 if( req.Status == RequestStatus.COMPLETED )
                 {

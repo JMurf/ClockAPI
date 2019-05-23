@@ -11,6 +11,6 @@ namespace TimeClock.DTOs
         public string DeviceKey { get; set; }
         public string Msg { get; set; }
         public RequestStatus Status { get; set; }
-        public string Data { get; set; }
+        public ClockDTO Data { get; set; }
     }
 }

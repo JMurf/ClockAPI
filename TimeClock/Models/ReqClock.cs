@@ -16,10 +16,10 @@ namespace TimeClock.Models
         [JsonIgnore]
         public RequestStatus Status { get; set; }
         public string Pass { get; set; }
-        public int TaskNo { get; set; }     /* unique task (req) identifier */ 
+        public int TaskNo { get; set; }     /* unique task (req) identifier */
         public string Result { get; set; }
         public string InterfaceName { get; set; }
-        public string Data { get; set; }
+        public ClockDTO Data { get; set; }
         [JsonIgnore]
         public ManualResetEvent mre { get; set; }
 

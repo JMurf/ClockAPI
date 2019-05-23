@@ -15,8 +15,8 @@ namespace TimeClock.Models
         /* delegate */
         public void ProcessFindRecords(ClockDTO data)
         {
-            log.Info(data);
-            Data = JsonConvert.SerializeObject(data);
+            //log.Info(data);
+            Data = data;
         }
 
         public RequestFindRecords()

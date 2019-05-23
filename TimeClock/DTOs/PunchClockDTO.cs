@@ -14,7 +14,7 @@
         public string InterfaceName { get; set; } /* interface to be executed */
         public int TaskNo { get; set; }  /* task number */
 
-        public override string ToString()
+        /*public override string ToString999()
         {
             string retStr = "\n" + base.ToString();
             if( DeviceKey != null ) retStr += "\nDeviceKey: " + DeviceKey;
@@ -27,6 +27,6 @@
             if( TaskNo != 0 ) retStr += "\nTaskNo: " + TaskNo;
             if( Result != null ) retStr += "\nResult: " + Result;
             return retStr;
-        }
+        }*/
     }
 }
